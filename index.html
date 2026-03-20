@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foro de Autores</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f7fb;
+      color: #1f2937;
+    }
+
+    .forum-app {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: white;
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 0;
+      opacity: 0.95;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .danger {
+      background: #dc2626;
+    }
+
+    .danger:hover {
+      background: #b91c1c;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+    }
+
+    .post {
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: #fff;
+    }
+
+    .post-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0 0 6px;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .post-content {
+      white-space: pre-wrap;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .reply-box {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .reply {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .empty, .loading {
+      text-align: center;
+      color: #6b7280;
+      padding: 30px 10px;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    @media (max-width: 700px) {
+      .form-row,
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+
+      .forum-app {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="forum-app">
+    <div class="header">
+      <h1>Foro de Autores</h1>
+      <p>Añade información sobre el proyecto. Puedes incluir métricas de éxito, cronologías y las últimas novedades.</p>
+    </div>
+
+    <div class="card">
+      <h2>Nueva publicación</h2>
+      <div class="form-row">
+        <input type="text" id="author" placeholder="Tu nombre" />
+        <select id="category">
+          <option value="General">General</option>
+          <option value="Métricas">Métricas de éxito</option>
+          <option value="Cronologías">Cronologia</option>
+          <option value="Novedades">Novedades</option>
+          <option value="Ayuda">Ayuda</option>
+        </select>
+      </div>
+      <input type="text" id="title" placeholder="Título" />
+      <div style="height:12px;"></div>
+      <textarea id="content" placeholder="Escribe tu publicación..."></textarea>
+      <div class="actions">
+        <button onclick="addPost()">Publicar</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="card">
+      <h2>Buscar y filtrar</h2>
+      <div class="filters">
+        <input type="text" id="searchInput" placeholder="Buscar..." oninput="renderPosts()" />
+        <select id="filterCategory" onchange="renderPosts()">
+          <option value="General">General</option>
+          <option value="Métricas">Métricas de éxito</option>
+          <option value="Cronologías">Cronologia</option>
+          <option value="Novedades">Novedades</option>
+          <option value="Ayuda">Ayuda</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Conversaciones</h2>
+      <div id="postsContainer" class="loading">Cargando publicaciones...</div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwc5G-JP7G--vCTB_s24UwWPbCc4x5Dn7Ol97N6Ra-98U87UPMtI07QDrm-GyCsL1ed7w/exec";
+    let allPosts = [];
+
+    function setStatus(message, isError = false) {
+      const el = document.getElementById("status");
+      el.textContent = message || "";
+      el.style.color = isError ? "#b91c1c" : "#374151";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text || "";
+      return div.innerHTML;
+    }
+
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString("es-CO", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    async function apiGetPosts() {
+      const res = await fetch(`${SCRIPT_URL}?action=getPosts`);
+      return await res.json();
+    }
+
+    async function apiPost(data) {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(data)
+      });
+      return await res.json();
+    }
+
+    async function loadPosts() {
+      const container = document.getElementById("postsContainer");
+      container.innerHTML = '<div class="loading">Cargando publicaciones...</div>';
+
+      try {
+        const result = await apiGetPosts();
+        if (!result.success) {
+          container.innerHTML = '<div class="empty">No se pudieron cargar las publicaciones.</div>';
+          return;
+        }
+        allPosts = result.posts || [];
+        renderPosts();
+      } catch (error) {
+        container.innerHTML = '<div class="empty">Error al conectar con el servidor.</div>';
+      }
+    }
+
+    async function addPost() {
+      const author = document.getElementById("author").value.trim();
+      const category = document.getElementById("category").value;
+      const title = document.getElementById("title").value.trim();
+      const content = document.getElementById("content").value.trim();
+
+      if (!author || !title || !content) {
+        setStatus("Completa nombre, título y contenido.", true);
+        return;
+      }
+
+      setStatus("Publicando...");
+
+      try {
+        const result = await apiPost({
+          action: "addPost",
+          author,
+          category,
+          title,
+          content
+        });
+
+        if (!result.success) {
+          setStatus(result.message || "No se pudo publicar.", true);
+          return;
+        }
+
+        document.getElementById("title").value = "";
+        document.getElementById("content").value = "";
+        setStatus("Publicación creada correctamente.");
+        await loadPosts();
+      } catch (error) {
+        setStatus("Error al publicar.", true);
+      }
+    }
+
+    async function addReply(postId) {
+      const authorInput = document.getElementById(`reply-author-${postId}`);
+      const contentInput = document.getElementById(`reply-content-${postId}`);
+
+      const author = authorInput.value.trim();
+      const content = contentInput.value.trim();
+
+      if (!author || !content) {
+        alert("Completa tu nombre y la respuesta.");
+        return;
+      }
+
+      try {
+        const result = await apiPost({
+          action: "addReply",
+          postId,
+          author,
+          content
+        });
+
+        if (!result.success) {
+          alert(result.message || "No se pudo responder.");
+          return;
+        }
+
+        await loadPosts();
+      } catch (error) {
+        alert("Error al enviar la respuesta.");
+      }
+    }
+
+    async function deletePost(postId) {
+      if (!confirm("¿Eliminar esta publicación y sus respuestas?")) return;
+
+      try {
+        const result = await apiPost({
+          action: "deletePost",
+          id: postId
+        });
+
+        if (!result.success) {
+          alert(result.message || "No se pudo eliminar.");
+          return;
+        }
+
+        await loadPosts();
+      } catch (error) {
+        alert("Error al eliminar la publicación.");
+      }
+    }
+
+    async function deleteReply(replyId) {
+      if (!confirm("¿Eliminar esta respuesta?")) return;
+
+      try {
+        const result = await apiPost({
+          action: "deleteReply",
+          id: replyId
+        });
+
+        if (!result.success) {
+          alert(result.message || "No se pudo eliminar.");
+          return;
+        }
+
+        await loadPosts();
+      } catch (error) {
+        alert("Error al eliminar la respuesta.");
+      }
+    }
+
+    function renderPosts() {
+      const container = document.getElementById("postsContainer");
+      const search = document.getElementById("searchInput").value.trim().toLowerCase();
+      const category = document.getElementById("filterCategory").value;
+
+      let posts = allPosts.filter(post => {
+        const text = `${post.title} ${post.content} ${post.author}`.toLowerCase();
+        const matchSearch = text.includes(search);
+        const matchCategory = category === "Todas" || post.category === category;
+        return matchSearch && matchCategory;
+      });
+
+      if (!posts.length) {
+        container.innerHTML = '<div class="empty">No hay publicaciones.</div>';
+        return;
+      }
+
+      container.innerHTML = posts.map(post => `
+        <div class="post">
+          <div class="badge">${escapeHtml(post.category)}</div>
+          <h3 class="post-title">${escapeHtml(post.title)}</h3>
+          <div class="meta">
+            Publicado por <strong>${escapeHtml(post.author)}</strong> · ${formatDate(post.createdAt)} · ${(post.replies || []).length} respuesta(s)
+          </div>
+          <div class="post-content">${escapeHtml(post.content)}</div>
+
+          <div class="actions">
+            <button class="danger" onclick="deletePost('${post.id}')">Eliminar publicación</button>
+          </div>
+
+          <div class="reply-box">
+            <h4>Responder</h4>
+            <div class="form-row">
+              <input type="text" id="reply-author-${post.id}" placeholder="Tu nombre" />
+              <button onclick="addReply('${post.id}')">Enviar respuesta</button>
+            </div>
+            <textarea id="reply-content-${post.id}" placeholder="Escribe tu respuesta..."></textarea>
+          </div>
+
+          <div class="reply-box">
+            <h4>Respuestas</h4>
+            ${(post.replies || []).length === 0
+              ? '<div class="small">Aún no hay respuestas.</div>'
+              : post.replies.map(reply => `
+                <div class="reply">
+                  <div><strong>${escapeHtml(reply.author)}</strong></div>
+                  <div class="small">${formatDate(reply.createdAt)}</div>
+                  <div style="margin-top:8px; white-space: pre-wrap;">${escapeHtml(reply.content)}</div>
+                  <div style="margin-top:10px;">
+                    <button class="danger" onclick="deleteReply('${reply.id}')">Eliminar respuesta</button>
+                  </div>
+                </div>
+              `).join("")
+            }
+          </div>
+        </div>
+      `).join("");
+    }
+
+    loadPosts();
+  </script>
+</body>
+</html>
